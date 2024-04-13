@@ -8,7 +8,8 @@ const app = fastify();
 
 app.get('/user', async () => {
   const users = await prisma.user.findMany();
-  return users;
+
+  return users.filter(user => !user.deleted_at);
 });
 
 app.post('/user', async (req: any, res: any) => {
@@ -19,7 +20,7 @@ app.post('/user', async (req: any, res: any) => {
       data: dataUser
     });
 
-  return user; 
+    return user;
 
   } catch (error) {
     res.status(500).send("Erro ao criar usuário");
@@ -32,25 +33,32 @@ app.put('/user/:id', async (req: any, res: any) => {
     const dataUser = req.body as UserData;
 
     const updatedUser = await prisma.user.update({
-      where: { id: userId }, 
+      where: { id: userId },
       data: dataUser
     });
 
-    res.json(updatedUser);
+    return updatedUser;
+
   } catch (error) {
-    console.error("Erro ao atualizar usuário:", error);
-    res.status(500).json({ error: "Erro ao atualizar usuário" });
+    res.status(500).send("Erro ao atualizar usuário");
   }
 });
 
-app.delete('/user/:id', async (req: any) => {
-  const userId = parseInt(req.params.id); 
+app.delete('/user/:id', async (req: any, res: any) => {
+  const userId = req.params.id;
 
-  const deletedUser = await prisma.user.delete({
-    where: { id: userId.toString() }, 
-  });
+  try {
+    const deletedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { deleted_at: new Date() }
+    });
 
-  return deletedUser; 
+    return deletedUser;
+
+  } catch (error) {
+    res.status(500).send("Erro ao deletar usuário");
+  }
+
 });
 
 const HOST = process.env.HOST;
