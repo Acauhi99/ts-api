@@ -10,5 +10,5 @@ Esta é uma API CRUD simples desenvolvida em TypeScript utilizando Prisma como O
 
 ## Requisitos
 
-- Node.js (versão 14 ou superior)
+- Node.js 
 - SQLite
